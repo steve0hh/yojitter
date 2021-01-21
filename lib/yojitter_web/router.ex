@@ -15,8 +15,7 @@ defmodule YojitterWeb.Router do
 
   scope "/", YojitterWeb do
     pipe_through :browser
-
-    get "/", PageController, :index
+    resources "/",  TweetController, only: [:index, :show, :new, :create]
   end
 
   # Other scopes may use custom stacks.

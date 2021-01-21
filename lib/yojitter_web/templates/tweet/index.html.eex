@@ -1,0 +1,26 @@
+<h1>Listing Tweets</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Message</th>
+      <th>Retweeted times</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+<%= for tweet <- @tweets do %>
+    <tr>
+      <td><%= tweet.message %></td>
+      <td><%= tweet.retweeted_times %></td>
+
+      <td>
+        <span><%= link "Show", to: Routes.tweet_path(@conn, :show, tweet) %></span>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+
+<span><%= link "New Tweet", to: Routes.tweet_path(@conn, :new) %></span>
