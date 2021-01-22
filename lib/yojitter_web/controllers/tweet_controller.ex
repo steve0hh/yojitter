@@ -30,4 +30,19 @@ defmodule YojitterWeb.TweetController do
     tweet = Twitter.get_tweet!(id)
     render(conn, "show.html", tweet: tweet)
   end
+
+
+  def retweet(conn, %{"id" => id}) do
+    case Twitter.retweet_tweet(id) do
+      {:ok, nil} ->
+        conn
+        |> put_flash(:info, "Tweet created successfully.")
+        |> redirect(to: Routes.tweet_path(conn, :index))
+      {:error, :not_found} ->
+        conn
+        |> put_flash(:error, "Tweet not found")
+        |> redirect(to: Routes.tweet_path(conn, :index))
+    end
+
+  end
 end

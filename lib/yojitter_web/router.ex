@@ -16,6 +16,7 @@ defmodule YojitterWeb.Router do
   scope "/", YojitterWeb do
     pipe_through :browser
     resources "/",  TweetController, only: [:index, :show, :new, :create]
+    post "/retweet/:id", TweetController, :retweet
   end
 
   # Other scopes may use custom stacks.

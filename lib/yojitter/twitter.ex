@@ -67,4 +67,30 @@ defmodule Yojitter.Twitter do
   def change_tweet(%Tweet{} = tweet, attrs \\ %{}) do
     Tweet.changeset(tweet, attrs)
   end
+
+
+  @doc """
+  Retweets a tweet by incrementing the `retweeted_times` and
+  updates the `updated_at` fed.
+
+  ## Examples
+
+      iex> retweet_tweet(123)
+      {:ok, nil}
+
+      iex> retweet_tweet(456) #non-existent id
+      {:error, :not_found}
+  """
+  def retweet_tweet(id) do
+    now = NaiveDateTime.utc_now
+    Tweet
+    |> where(id: ^id)
+    |> update([set: [updated_at: ^now]])
+    |> update([inc: [retweeted_times: 1]])
+    |> Repo.update_all([])
+    |> case do
+      {1, nil} -> {:ok, nil}
+      {_, nil} -> {:error, :not_found}
+    end
+  end
 end

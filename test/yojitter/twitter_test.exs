@@ -46,5 +46,14 @@ defmodule Yojitter.TwitterTest do
       tweet = tweet_fixture()
       assert %Ecto.Changeset{} = Twitter.change_tweet(tweet)
     end
+
+    test "retweet_tweet/1 increments the retweeted_times count" do
+      tweet = tweet_fixture()
+      assert {:ok, nil} = Twitter.retweet_tweet(tweet.id)
+    end
+
+    test "retweet_tweet/1 returns {:error, :notfound} tuple when tweet doesn't exists" do
+      assert {:error, :not_found} = Twitter.retweet_tweet(141)
+    end
   end
 end

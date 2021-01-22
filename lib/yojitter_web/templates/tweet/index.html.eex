@@ -17,6 +17,8 @@
 
       <td>
         <span><%= link "Show", to: Routes.tweet_path(@conn, :show, tweet) %></span>
+        &nbsp;|&nbsp;
+        <span><%= link "Retweet", to: Routes.tweet_path(@conn, :retweet, tweet), method: :post %></span>
       </td>
     </tr>
 <% end %>
