@@ -5,7 +5,7 @@ defmodule YojitterWeb.TweetController do
   alias Yojitter.Twitter.Tweet
 
   def index(conn, _params) do
-    tweets = Twitter.list_tweets()
+    tweets = Twitter.list_top_tweets(10)
     render(conn, "index.html", tweets: tweets)
   end
 

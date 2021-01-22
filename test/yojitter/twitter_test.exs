@@ -55,5 +55,11 @@ defmodule Yojitter.TwitterTest do
     test "retweet_tweet/1 returns {:error, :notfound} tuple when tweet doesn't exists" do
       assert {:error, :not_found} = Twitter.retweet_tweet(141)
     end
+
+    test "list_top_tweets/1 returns the top `n` most retweeted tweets" do
+      popoular_tweet = tweet_fixture(%{retweeted_times: 10})
+      tweet = tweet_fixture(%{retweeted_times: 0})
+      assert Twitter.list_top_tweets(2) == [popoular_tweet, tweet]
+    end
   end
 end

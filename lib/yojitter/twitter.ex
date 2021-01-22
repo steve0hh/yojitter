@@ -22,6 +22,23 @@ defmodule Yojitter.Twitter do
   end
 
   @doc """
+  Returns top `n` tweets with the most retweets
+
+  ## Examples
+      iex> list_top_tweets(2)
+      [%Tweet{}, %Tweet{}]
+
+      iex> list_top_tweets(10)
+      [%Tweet{}, %Tweet{}, ...]
+  """
+  def list_top_tweets(n) do
+    Tweet
+    |> order_by(desc: :retweeted_times)
+    |> limit(^n)
+    |> Repo.all()
+  end
+
+  @doc """
   Gets a single tweet.
 
   Raises `Ecto.NoResultsError` if the Tweet does not exist.
