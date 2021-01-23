@@ -14,9 +14,10 @@ defmodule Yojitter.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: Yojitter.PubSub},
       # Start the Endpoint (http/https)
-      YojitterWeb.Endpoint
+      YojitterWeb.Endpoint,
       # Start a worker by calling: Yojitter.Worker.start_link(arg)
       # {Yojitter.Worker, arg}
+      {Yojitter.Twitter.TopTweetCache, name: Yojitter.Twitter.TopTweetCache},
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

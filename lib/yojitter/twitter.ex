@@ -6,6 +6,7 @@ defmodule Yojitter.Twitter do
   import Ecto.Query, warn: false
   alias Ecto.Multi
   alias Yojitter.Repo
+  alias Yojitter.Twitter.TopTweetCache
 
   alias Yojitter.Twitter.Tweet
 
@@ -32,11 +33,9 @@ defmodule Yojitter.Twitter do
       iex> list_top_tweets(10)
       [%Tweet{}, %Tweet{}, ...]
   """
-  def list_top_tweets(n) do
-    Tweet
-    |> order_by(desc: :retweeted_times)
-    |> limit(^n)
-    |> Repo.all()
+  def list_top_tweets(server \\ TopTweetCache, n) do
+    {:ok, list} = TopTweetCache.top_tweets(server, n)
+    list
   end
 
   @doc """
@@ -101,7 +100,7 @@ defmodule Yojitter.Twitter do
       iex> retweet_tweet!(456) #non-existent id
       ** (Ecto.NoResultsError)
   """
-  def retweet_tweet!(id) do
+  def retweet_tweet!(server \\ TopTweetCache, id) do
     now = NaiveDateTime.utc_now
 
     tweet = Repo.get!(Tweet, id)
@@ -114,18 +113,19 @@ defmodule Yojitter.Twitter do
     retweet = Tweet.changeset(%Tweet{}, %{message: tweet.message, parent_id: id, retweeted_times: 0})
 
     increment = Tweet
-    |> where(id: ^id)
-    |> update([set: [updated_at: ^now]])
-    |> update([inc: [retweeted_times: 1]])
+                |> select([u], u)
+                |> where(id: ^id)
+                |> update([set: [updated_at: ^now]])
+                |> update([inc: [retweeted_times: 1]])
 
     Multi.new()
     |> Multi.insert(:create_retweet, retweet)
     |> Multi.update_all(:inc_tweet, increment, [])
+    |> Multi.run(:cache_tweet, fn(_repo, %{create_retweet: _, inc_tweet: {1, [tweet]}}) -> TopTweetCache.cache(server, tweet) end)
     |> Repo.transaction()
     |> case do
-      {:ok, %{create_retweet: tweet, inc_tweet: {1, nil}}} -> tweet
+      {:ok, %{create_retweet: tweet, inc_tweet: {1, _}}} -> tweet
       error-> error
     end
-
   end
 end

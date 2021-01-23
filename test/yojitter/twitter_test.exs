@@ -2,6 +2,7 @@ defmodule Yojitter.TwitterTest do
   use Yojitter.DataCase
 
   alias Yojitter.Twitter
+  alias Yojitter.Twitter.TopTweetCache
 
   describe "tweets" do
     alias Yojitter.Twitter.Tweet
@@ -46,33 +47,48 @@ defmodule Yojitter.TwitterTest do
       tweet = tweet_fixture()
       assert %Ecto.Changeset{} = Twitter.change_tweet(tweet)
     end
+  end
 
-    test "retweet_tweet!/1 returns a new tweet" do
+  describe "tweets functions that need to use cache" do
+    setup do
+      Ecto.Adapters.SQL.Sandbox.mode(Yojitter.Repo, {:shared, self()})
+      pid = start_supervised!(TopTweetCache)
+      {:ok , cache: pid}
+    end
+
+    test "retweet_tweet!/1 returns a new tweet", %{cache: cache} do
       tweet = tweet_fixture()
-      retweet = Twitter.retweet_tweet!(tweet.id)
+      retweet = Twitter.retweet_tweet!(cache, tweet.id)
       assert tweet.id == retweet.parent_id
       assert tweet.message == retweet.message
       assert tweet.retweeted_times == 0
     end
 
-    test "retweet_tweet!/1 sets parent_id as retweet's parent_id when retweeting a retweet" do
+    test "retweet_tweet!/1 sets parent_id as retweet's parent_id when retweeting a retweet", %{cache: cache} do
       tweet = tweet_fixture()
-      retweet1 = Twitter.retweet_tweet!(tweet.id)
-      retweet2 = Twitter.retweet_tweet!(tweet.id)
+      retweet1 = Twitter.retweet_tweet!(cache, tweet.id)
+      retweet2 = Twitter.retweet_tweet!(cache, tweet.id)
       assert retweet1.parent_id == retweet2.parent_id
     end
 
-    test "retweet_tweet!/1 increments the retweeted_times count" do
+    test "retweet_tweet!/1 increments the retweeted_times count", %{cache: cache} do
       tweet = tweet_fixture()
-      Twitter.retweet_tweet!(tweet.id)
+      Twitter.retweet_tweet!(cache, tweet.id)
       parent = Twitter.get_tweet!(tweet.id)
       assert parent.retweeted_times == tweet.retweeted_times + 1
     end
 
-    test "list_top_tweets/1 returns the top `n` most retweeted tweets" do
-      popoular_tweet = tweet_fixture(%{retweeted_times: 10})
-      tweet = tweet_fixture(%{retweeted_times: 0})
-      assert Twitter.list_top_tweets(2) == [popoular_tweet, tweet]
+    test "list_top_tweets/1 returns the top `n` most retweeted tweets", %{cache: cache} do
+      tweet1 = tweet_fixture(%{retweeted_times: 1})
+      tweet2 = tweet_fixture(%{retweeted_times: 2})
+
+      Twitter.retweet_tweet!(cache, tweet1.id) # retweet to trigger cache
+      Twitter.retweet_tweet!(cache, tweet2.id) # retweet to trigger cache
+
+      tweet1 = %{tweet1 | retweeted_times: 2} # increment retweet count
+      tweet2 = %{tweet2 | retweeted_times: 3} # increment retweet count
+
+      assert [tweet2, tweet1] == Twitter.list_top_tweets(cache, 2)
     end
   end
 end
