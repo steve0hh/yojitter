@@ -4,6 +4,7 @@ defmodule Yojitter.Twitter do
   """
 
   import Ecto.Query, warn: false
+  alias Ecto.Multi
   alias Yojitter.Repo
 
   alias Yojitter.Twitter.Tweet
@@ -90,24 +91,41 @@ defmodule Yojitter.Twitter do
   Retweets a tweet by incrementing the `retweeted_times` and
   updates the `updated_at` fed.
 
+  Raises `Ecto.NoResultsError` if the Tweet does not exist.
+
   ## Examples
 
-      iex> retweet_tweet(123)
-      {:ok, nil}
+  iex> retweet_tweet!(123)
+      %Tweet{}
 
-      iex> retweet_tweet(456) #non-existent id
-      {:error, :not_found}
+      iex> retweet_tweet!(456) #non-existent id
+      ** (Ecto.NoResultsError)
   """
-  def retweet_tweet(id) do
+  def retweet_tweet!(id) do
     now = NaiveDateTime.utc_now
-    Tweet
+
+    tweet = Repo.get!(Tweet, id)
+
+    id = case tweet do
+      %Tweet{parent_id: nil, id: tid} -> tid # original tweet
+      %Tweet{parent_id: parent_id} -> parent_id # retweet case
+    end
+
+    retweet = Tweet.changeset(%Tweet{}, %{message: tweet.message, parent_id: id, retweeted_times: 0})
+
+    increment = Tweet
     |> where(id: ^id)
     |> update([set: [updated_at: ^now]])
     |> update([inc: [retweeted_times: 1]])
-    |> Repo.update_all([])
+
+    Multi.new()
+    |> Multi.insert(:create_retweet, retweet)
+    |> Multi.update_all(:inc_tweet, increment, [])
+    |> Repo.transaction()
     |> case do
-      {1, nil} -> {:ok, nil}
-      {_, nil} -> {:error, :not_found}
+      {:ok, %{create_retweet: tweet, inc_tweet: {1, nil}}} -> tweet
+      error-> error
     end
+
   end
 end

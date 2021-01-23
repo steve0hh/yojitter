@@ -47,13 +47,26 @@ defmodule Yojitter.TwitterTest do
       assert %Ecto.Changeset{} = Twitter.change_tweet(tweet)
     end
 
-    test "retweet_tweet/1 increments the retweeted_times count" do
+    test "retweet_tweet!/1 returns a new tweet" do
       tweet = tweet_fixture()
-      assert {:ok, nil} = Twitter.retweet_tweet(tweet.id)
+      retweet = Twitter.retweet_tweet!(tweet.id)
+      assert tweet.id == retweet.parent_id
+      assert tweet.message == retweet.message
+      assert tweet.retweeted_times == 0
     end
 
-    test "retweet_tweet/1 returns {:error, :notfound} tuple when tweet doesn't exists" do
-      assert {:error, :not_found} = Twitter.retweet_tweet(141)
+    test "retweet_tweet!/1 sets parent_id as retweet's parent_id when retweeting a retweet" do
+      tweet = tweet_fixture()
+      retweet1 = Twitter.retweet_tweet!(tweet.id)
+      retweet2 = Twitter.retweet_tweet!(tweet.id)
+      assert retweet1.parent_id == retweet2.parent_id
+    end
+
+    test "retweet_tweet!/1 increments the retweeted_times count" do
+      tweet = tweet_fixture()
+      Twitter.retweet_tweet!(tweet.id)
+      parent = Twitter.get_tweet!(tweet.id)
+      assert parent.retweeted_times == tweet.retweeted_times + 1
     end
 
     test "list_top_tweets/1 returns the top `n` most retweeted tweets" do
