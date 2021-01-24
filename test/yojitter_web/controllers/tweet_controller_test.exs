@@ -14,7 +14,7 @@ defmodule YojitterWeb.TweetControllerTest do
   describe "index" do
     test "lists all tweets", %{conn: conn} do
       conn = get(conn, Routes.tweet_path(conn, :index))
-      assert html_response(conn, 200) =~ "Listing Tweets"
+      assert html_response(conn, 200) =~ "Listing Top 10 Tweets"
     end
   end
 

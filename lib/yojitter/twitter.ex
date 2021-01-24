@@ -19,11 +19,31 @@ defmodule Yojitter.Twitter do
 
   """
   def list_tweets do
+    Tweet
+    |> order_by([desc: :inserted_at, desc: :id])
     Repo.all(Tweet)
   end
 
+  @doc """
+  Returns the list of all tweets with page based pagination.
+
+  ## Examples
+      iex> list_tweets(:paged, 1, per_page: 2)
+      %{
+        has_next: true,
+        has_prev: false,
+        prev_page: 0,
+        page: 1,
+        next_page: 2,
+        first: 1,
+        last: 10,
+        count: 100,
+        list: [%Tweet{}, %Tweet{}]
+      }
+  """
   def list_tweets(:paged, page, per_page: per_page) do
     Tweet
+    |> order_by([desc: :inserted_at, desc: :id])
     |> Pagination.page(page, per_page: per_page)
   end
 

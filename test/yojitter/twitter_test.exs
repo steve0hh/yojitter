@@ -24,6 +24,16 @@ defmodule Yojitter.TwitterTest do
       assert Twitter.list_tweets() == [tweet]
     end
 
+    test "list_tweets/3 returns tweets specified by `per_page` parameter" do
+      tweet_fixture()
+      tweet2 = tweet_fixture()
+      tweet3 = tweet_fixture()
+
+      tweets_page = Twitter.list_tweets(:paged, 1, per_page: 2)
+
+      assert tweets_page.list == [tweet3, tweet2]
+    end
+
     test "get_tweet!/1 returns the tweet with given id" do
       tweet = tweet_fixture()
       assert Twitter.get_tweet!(tweet.id) == tweet
