@@ -58,6 +58,27 @@ defmodule Yojitter.TwitterTest do
       assert %Ecto.Changeset{} = Twitter.change_tweet(tweet)
     end
   end
+  test "retweet_tweet!/1 returns a new tweet" do
+    tweet = tweet_fixture()
+    retweet = Twitter.retweet_tweet!(tweet.id)
+    assert tweet.id == retweet.parent_id
+    assert tweet.message == retweet.message
+    assert tweet.retweeted_times == 0
+  end
+
+  test "retweet_tweet!/1 sets parent_id as retweet's parent_id when retweeting a retweet" do
+    tweet = tweet_fixture()
+    retweet1 = Twitter.retweet_tweet!(tweet.id)
+    retweet2 = Twitter.retweet_tweet!(tweet.id)
+    assert retweet1.parent_id == retweet2.parent_id
+  end
+
+  test "retweet_tweet!/1 increments the retweeted_times count" do
+    tweet = tweet_fixture()
+    Twitter.retweet_tweet!(tweet.id)
+    parent = Twitter.get_tweet!(tweet.id)
+    assert parent.retweeted_times == tweet.retweeted_times + 1
+  end
 
   describe "tweets functions that need to use cache" do
     setup do
@@ -66,26 +87,9 @@ defmodule Yojitter.TwitterTest do
       {:ok , cache: pid}
     end
 
-    test "retweet_tweet!/1 returns a new tweet", %{cache: cache} do
-      tweet = tweet_fixture()
-      retweet = Twitter.retweet_tweet!(cache, tweet.id)
-      assert tweet.id == retweet.parent_id
-      assert tweet.message == retweet.message
-      assert tweet.retweeted_times == 0
-    end
-
-    test "retweet_tweet!/1 sets parent_id as retweet's parent_id when retweeting a retweet", %{cache: cache} do
-      tweet = tweet_fixture()
-      retweet1 = Twitter.retweet_tweet!(cache, tweet.id)
-      retweet2 = Twitter.retweet_tweet!(cache, tweet.id)
-      assert retweet1.parent_id == retweet2.parent_id
-    end
-
-    test "retweet_tweet!/1 increments the retweeted_times count", %{cache: cache} do
-      tweet = tweet_fixture()
-      Twitter.retweet_tweet!(cache, tweet.id)
-      parent = Twitter.get_tweet!(tweet.id)
-      assert parent.retweeted_times == tweet.retweeted_times + 1
+    test "create_tweet/2 caches tweets to TopTweetCache", %{cache: cache} do
+      {:ok, tweet} = Twitter.create_tweet(cache, @valid_attrs)
+      assert [tweet] == Twitter.list_top_tweets(cache, 2)
     end
 
     test "list_top_tweets/1 returns the top `n` most retweeted tweets", %{cache: cache} do

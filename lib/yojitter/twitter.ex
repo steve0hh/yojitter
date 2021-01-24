@@ -88,12 +88,20 @@ defmodule Yojitter.Twitter do
 
       iex> create_tweet(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
-
   """
-  def create_tweet(attrs \\ %{}) do
-    %Tweet{}
-    |> Tweet.changeset(attrs)
-    |> Repo.insert()
+
+  def create_tweet(attrs) when is_map(attrs), do: create_tweet(TopTweetCache, attrs)
+  def create_tweet(server, attrs \\ %{}) do
+    create_tweet = Tweet.changeset(%Tweet{}, attrs)
+    Multi.new()
+    |> Multi.insert(:create_retweet, create_tweet)
+    |> Multi.run(:cache_tweet, fn(_repo, %{create_retweet: tweet}) -> TopTweetCache.cache(server, tweet) end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{create_retweet: tweet, cache_tweet: {}}} -> {:ok, tweet}
+      {:error, :create_retweet, changeset, %{}} -> {:error, changeset}
+      error -> error
+    end
   end
 
   @doc """
