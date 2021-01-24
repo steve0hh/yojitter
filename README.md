@@ -70,5 +70,35 @@ PORT=80 MIX_ENV=prod mix ecto.migrate
 # setcap to allow beam to bind to port 80 as non-root user
 setcap 'cap_net_bind_service=+ep' /usr/lib/erlang/erts-11.5/bin/beam.smp
 
-# start server
-PORT=80 MIX_ENV=prod mix phx.server
+# start server in detached mode
+PORT=80 MIX_ENV=prod elixir --erl "-detached" -S mix phx.server
+```
+
+
+## Update instructions
+
+```bash
+sudo -i # sudo to root
+
+cd /var/www/yojitter
+
+export SECRET_KEY_BASE=CHANGEME # you can generate secret key via `mix phx.gen.secret`
+export DATABASE_URL=ecto://postgres:CHANGEME_POSTGRESQL_PASSWORD@CHANGEME_POSTGRESQL_HOST_URL/yojitter-prod
+
+MIX_ENV=prod mix compile
+mix phx.digest
+
+exit # change to ec2-user
+
+export SECRET_KEY_BASE=CHANGEME # you can generate secret key via `mix phx.gen.secret`
+export DATABASE_URL=ecto://postgres:CHANGEME_POSTGRESQL_PASSWORD@CHANGEME_POSTGRESQL_HOST_URL/yojitter-prod
+
+
+# optional, kill server process if it's not down yet
+# $ ps aux | grep elixir
+# 1921
+# $ kill 1921
+
+# start server in detached mode
+PORT=80 MIX_ENV=prod elixir --erl "-detached" -S mix phx.server
+```
