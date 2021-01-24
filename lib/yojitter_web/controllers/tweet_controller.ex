@@ -9,6 +9,12 @@ defmodule YojitterWeb.TweetController do
     render(conn, "index.html", tweets: tweets)
   end
 
+  def all(conn, params) do
+    page = params["page"] || 1
+    tweets = Twitter.list_tweets(:paged, page, per_page: 10)
+    render(conn, "all.html", tweets: tweets)
+  end
+
   def new(conn, _params) do
     changeset = Twitter.change_tweet(%Tweet{})
     render(conn, "new.html", changeset: changeset)

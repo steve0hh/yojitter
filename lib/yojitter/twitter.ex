@@ -5,9 +5,8 @@ defmodule Yojitter.Twitter do
 
   import Ecto.Query, warn: false
   alias Ecto.Multi
-  alias Yojitter.Repo
+  alias Yojitter.{Repo, Pagination}
   alias Yojitter.Twitter.TopTweetCache
-
   alias Yojitter.Twitter.Tweet
 
   @doc """
@@ -21,6 +20,11 @@ defmodule Yojitter.Twitter do
   """
   def list_tweets do
     Repo.all(Tweet)
+  end
+
+  def list_tweets(:paged, page, per_page: per_page) do
+    Tweet
+    |> Pagination.page(page, per_page: per_page)
   end
 
   @doc """
