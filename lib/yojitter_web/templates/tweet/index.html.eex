@@ -1,28 +1,5 @@
-<h1>Listing Tweets</h1>
+<h1>Listing Top 10 Tweets</h1>
 
-<table>
-  <thead>
-    <tr>
-      <th>Message</th>
-      <th>Retweeted times</th>
-
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-<%= for tweet <- @tweets do %>
-    <tr>
-      <td><%= tweet.message %></td>
-      <td><%= tweet.retweeted_times %></td>
-
-      <td>
-        <span><%= link "Show", to: Routes.tweet_path(@conn, :show, tweet) %></span>
-        &nbsp;|&nbsp;
-        <span><%= link "Retweet", to: Routes.tweet_path(@conn, :retweet, tweet), method: :post %></span>
-      </td>
-    </tr>
-<% end %>
-  </tbody>
-</table>
+<%= render "_tweets_table.html", tweets: @tweets, conn: @conn %>
 
 <span><%= link "New Tweet", to: Routes.tweet_path(@conn, :new) %></span>

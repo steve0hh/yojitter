@@ -1,36 +1,22 @@
 <h1>Listing all Tweets</h1>
 
-<table>
-  <thead>
-    <tr>
-      <th>Message</th>
-      <th>Retweeted times</th>
+<%= render "_tweets_table.html", tweets: @tweets.list, conn: @conn %>
 
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <%= for tweet <- @tweets.list do %>
-    <tr>
-      <td><%= tweet.message %></td>
-      <td><%= tweet.retweeted_times %></td>
 
-      <td>
-        <span><%= link "Show", to: Routes.tweet_path(@conn, :show, tweet) %></span>
-        &nbsp;|&nbsp;
-        <span><%= link "Retweet", to: Routes.tweet_path(@conn, :retweet, tweet), method: :post %></span>
-      </td>
-    </tr>
-<% end %>
-  </tbody>
-</table>
+<div class="row">
+  <div class="col-md-6">
+    <p><%= link "New Tweet", to: Routes.tweet_path(@conn, :new) %></p>
+  </div>
 
-<%= if @tweets.has_prev do %>
-  <%= link "Prev", to: Routes.tweet_path(@conn, :all, %{page: @tweets.prev_page}) %> |
-<% end %>
+  <div class="col-md-6">
+    <div class="float-end">
+      <%= if @tweets.has_prev do %>
+      <%= link "Prev", to: Routes.tweet_path(@conn, :all, %{page: @tweets.prev_page}) %> |
+    <% end %>
 
-<%= if @tweets.has_next do %>
-  | <%= link "Next", to: Routes.tweet_path(@conn, :all, %{page: @tweets.next_page}) %>
-<% end %>
-
-<p><%= link "New Tweet", to: Routes.tweet_path(@conn, :new) %></p>
+    <%= if @tweets.has_next do %>
+      <%= link "Next", to: Routes.tweet_path(@conn, :all, %{page: @tweets.next_page}) %>
+    <% end %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,28 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th style="width: 70%">Message</th>
+      <th>Retweets</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+<%= for tweet <- @tweets do %>
+    <tr>
+      <td><%= tweet.message %></td>
+      <td>
+        <%= if tweet.parent_id == nil do %>
+          <%= tweet.retweeted_times %>
+        <% else %>
+          This is a retweet
+        <% end %>
+      </td>
+      <td>
+        <span><%= link "Show", to: Routes.tweet_path(@conn, :show, tweet) %></span>
+        &nbsp;|&nbsp;
+        <span><%= link "Retweet", to: Routes.tweet_path(@conn, :retweet, tweet), method: :post %></span>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>

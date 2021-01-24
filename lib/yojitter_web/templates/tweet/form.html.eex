@@ -5,11 +5,14 @@
     </div>
   <% end %>
 
-  <%= label f, :message %>
-  <%= text_input f, :message %>
-  <%= error_tag f, :message %>
 
-  <div>
-    <%= submit "Save" %>
+  <div class="col-md-6">
+    <%= label f, :message, class: "form-label" %>
+    <%= textarea f, :message, class: "form-control" %>
+    <div class="text-danger">
+      &nbsp;<%= error_tag f, :message %>
+    </div>
   </div>
+
+  <%= submit "Tweet!", class: "btn btn-primary" %>
 <% end %>

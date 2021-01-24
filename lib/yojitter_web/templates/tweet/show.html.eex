@@ -1,17 +1,19 @@
 <h1>Show Tweet</h1>
 
-<ul>
-
-  <li>
-    <strong>Message:</strong>
-    <%= @tweet.message %>
-  </li>
-
-  <li>
-    <strong>Retweeted times:</strong>
-    <%= @tweet.retweeted_times %>
-  </li>
-
-</ul>
+<div class="card">
+  <div class="card-header">
+    Tweet #<%= @tweet.id %>
+  </div>
+  <div class="card-body">
+    <p class="card-text"><%= @tweet.message %></p>
+  </div>
+  <div class="card-footer text-muted">
+    <%= if @tweet.parent_id == nil do %>
+      Number of retweets: <%= @tweet.retweeted_times %>
+    <% else %>
+      This is a retweet
+    <% end %>
+  </div>
+</div>
 
 <span><%= link "Back", to: Routes.tweet_path(@conn, :index) %></span>
