@@ -21,7 +21,7 @@ defmodule Yojitter.Twitter do
   def list_tweets do
     Tweet
     |> order_by([desc: :inserted_at, desc: :id])
-    Repo.all(Tweet)
+    |> Repo.all()
   end
 
   @doc """
