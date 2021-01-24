@@ -18,6 +18,13 @@ defmodule YojitterWeb.TweetControllerTest do
     end
   end
 
+  describe "all" do
+    test "lists all tweets", %{conn: conn} do
+      conn = get(conn, Routes.tweet_path(conn, :all))
+      assert html_response(conn, 200) =~ "Listing all Tweets"
+    end
+  end
+
   describe "new tweet" do
     test "renders form", %{conn: conn} do
       conn = get(conn, Routes.tweet_path(conn, :new))
@@ -40,10 +47,5 @@ defmodule YojitterWeb.TweetControllerTest do
       conn = post(conn, Routes.tweet_path(conn, :create), tweet: @invalid_attrs)
       assert html_response(conn, 200) =~ "New Tweet"
     end
-  end
-
-  defp create_tweet(_) do
-    tweet = fixture(:tweet)
-    %{tweet: tweet}
   end
 end
