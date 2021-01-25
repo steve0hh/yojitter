@@ -138,7 +138,9 @@ defmodule Yojitter.Twitter do
     tweet = Repo.get!(Tweet, id)
 
     id = case tweet do
+      # extract id if it's an original tweet for new retweet
       %Tweet{parent_id: nil, id: tid} -> tid # original tweet
+      # extract parent_id of retweet as parent_id for new retweet
       %Tweet{parent_id: parent_id} -> parent_id # retweet case
     end
 
